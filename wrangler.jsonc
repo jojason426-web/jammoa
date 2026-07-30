@@ -1,0 +1,55 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "jammoa-api",
+  "main": "worker/src/index.ts",
+  "compatibility_date": "2026-07-19",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": true
+  },
+  "routes": [
+    {
+      "pattern": "jammoa.com",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.jammoa.com",
+      "custom_domain": true
+    }
+  ],
+  "triggers": {
+    "crons": [
+      "*/30 * * * *"
+    ]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "jammoa-db",
+      "database_id": "27aadb6c-f93a-46ee-8565-7022704594eb"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "IMAGES",
+      "bucket_name": "jammoa-images"
+    }
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "CRAWL_QUEUE",
+        "queue": "jammoa-crawl"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "jammoa-crawl",
+        "max_batch_size": 5,
+        "max_batch_timeout": 30
+      }
+    ]
+  }
+}
