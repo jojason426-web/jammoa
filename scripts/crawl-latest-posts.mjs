@@ -173,6 +173,8 @@ function cleanupText(value) {
     .replace(/\u00a0/g, ' ')
     .replace(scriptChunkPattern, '\n')
     .replace(/scrollTop\s*:[^\n]*/giu, '\n')
+    .replace(/return\s+false;?/giu, '\n')
+    .replace(/localStorage\.[^\n]*/giu, '\n')
     .replace(visibleSourceLinePattern, '\n')
     .replace(/\s*추천\s*\d+\s*댓글\s*\d+/g, ' ')
     .replace(/dc official App/gi, ' ')

@@ -46,6 +46,8 @@ function cleanText(value) {
   return String(value || '')
     .replace(scriptChunkPattern, '\n')
     .replace(/scrollTop\s*:[^\n]*/giu, '\n')
+    .replace(/return\s+false;?/giu, '\n')
+    .replace(/localStorage\.[^\n]*/giu, '\n')
     .replace(visibleSourceLinePattern, '\n')
     .replace(sourceLinePattern, '\n')
     .split('\n')
@@ -138,9 +140,9 @@ for (const post of posts) {
   const title = cleanTitle(post.title) || post.title;
   const summary = cleanText(post.summary);
   const body = cleanText(post.body);
-  const fallbackSummary = (body || title).replace(/\s+/g, ' ').slice(0, 220).trim();
   const summaryHasJunk = junkTextPattern.test(post.summary || '');
   const bodyHasJunk = junkTextPattern.test(post.body || '');
+  const fallbackSummary = ((bodyHasJunk ? '' : body) || title).replace(/\s+/g, ' ').slice(0, 220).trim();
   const fields = [];
 
   if (title !== post.title) fields.push(`title=${sql(title)}`);
