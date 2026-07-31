@@ -171,6 +171,8 @@ function cleanupText(value) {
     .replace(/https?:\/\/\S+/gi, ' ')
     .split('\n')
     .map((line) => line.replace(/\s+/g, ' ').trim())
+    .filter((line) => !/^(var |if \(|jQuery|\$\(|}\);|current_|default_url|request_uri|http_port|https_port|rewrite_level|enforce_ssl|cookies_ssl|detectColorScheme)/.test(line))
+    .filter((line) => !/^(개드립 인기글|붐업 베스트|핫 딜|핫딜 판|읽을 거리 판|인기글|커뮤니티|주식 \/ 재테크 판|인터넷 방송 판|익명 판|컴퓨터 \/ IT 판|영상 판|고민 상담 판|탈것 판|코인 판|스포츠 판|요리 판|덕후 판|창작 판|음악 판|정치 사회 판|젠더 이슈 판|게임 판|놀이터|아이디|비밀번호|ID\/PW 찾기|아직 회원이 아니신가요\?)$/.test(line))
     .filter(Boolean)
     .filter((line) => !/로그인|회원가입|광고|공지|신고|스크랩|공유하기|목록|본문 보기|댓글/.test(line))
     .join('\n')

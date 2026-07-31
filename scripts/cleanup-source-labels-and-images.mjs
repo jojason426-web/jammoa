@@ -15,6 +15,10 @@ const sourceLabelPattern =
   /\s*(?:[-–—|]\s*)?(?:DogDrip\.?Net\s*)?(?:개드립|DogDrip\.?Net|FM코리아|에펨코리아|에펨|디시인사이드|루리웹|Ruliweb|오늘의유머|웃긴대학|보배드림|뽐뿌)\s*$/gi;
 const sourceLinePattern =
   /(?:^|\n)\s*(?:출처|원문|Source)\s*[:：]?\s*(?:https?:\/\/\S+|DogDrip\.?Net|개드립|FM코리아|에펨코리아|디시인사이드|루리웹|Ruliweb|오늘의유머|웃긴대학)[^\n]*(?=\n|$)/gi;
+const scriptLinePattern =
+  /^(?:var |if \(|jQuery|\$\(|}\);|current_|default_url|request_uri|http_port|https_port|rewrite_level|enforce_ssl|cookies_ssl|detectColorScheme)/;
+const navigationLinePattern =
+  /^(?:개드립 인기글|붐업 베스트|핫 딜|핫딜 판|읽을 거리 판|인기글|기묘한 이야기|호러 괴담|감동|자연|유머|과학|역사|기타 지식|커뮤니티|주식 \/ 재테크 판|인터넷 방송 판|익명 판|컴퓨터 \/ IT 판|영상 판|고민 상담 판|탈것 판|코인 판|스포츠 판|요리 판|덕후 판|창작 판|음악 판|정치 사회 판|젠더 이슈 판|게임 판|게임 연재 \/ 정보 판|모바일 게임 판|로스트아크|디아블로|LOL|콘솔 게임 판|던전 앤 파이터|놀이터|개드립콘|걸그룹 판|짤방 판|시간 때우기 \(게임\)|기타|아이디|비밀번호|ID\/PW 찾기|아직 회원이 아니신가요\?|유저)$/;
 
 function runWrangler(args) {
   const result = spawnSync(process.execPath, [wrangler, ...args], {
@@ -39,6 +43,8 @@ function cleanText(value) {
         .replace(/\s+/g, ' ')
         .trim(),
     )
+    .filter((line) => !scriptLinePattern.test(line))
+    .filter((line) => !navigationLinePattern.test(line))
     .filter(Boolean)
     .join('\n')
     .trim();
