@@ -75,6 +75,10 @@ const authorNames = [
 
 const blockedText =
   /19금|성인|야동|AV|비키니|노출|후방|섹시|음란|도박|카지노|불법|마약|혐오|자살|잔인|시체|강간|몰카|토렌트|다운로드|교미|뽕알|정액|발기|임신해|씨앗/i;
+const reviewBlockedText =
+  /19금|성인|후방|야짤|야동|비키니|수영복|속옷|란제리|노출|섹시|품번|AV\b|adult|bikini|lingerie|sexy|nude|naked|가슴|엉덩이|몸매|선정|살인|살해|사형|시체|잔혹|참수|강간|성폭행|칼부림|흉기|자살|죽여|죽인/i;
+const junkBodyText =
+  /var\s+|function\s*\(|clipboard|Kakao\.|window\.|document\.|jQuery|CDATA|URL 복사|개드립으로|붐업|objectType|mobileWebUrl|shareUrl|shareTitle|shareDesc/i;
 const junkImage =
   /logo|sprite|icon|avatar|profile|blank|captcha|btn_|emoticon|banner|ads?|doubleclick|googlesyndication/i;
 const visibleSourceLabelPattern =
@@ -198,6 +202,55 @@ function trimBody(text) {
   return clean.slice(0, maxBodyLength).replace(/\s+\S*$/, '').trim();
 }
 
+function softenReviewText(value) {
+  return String(value || '')
+    .replace(/개빡통|빡통/g, '답답한 상황')
+    .replace(/쳐먹|처먹/g, '듣게 되')
+    .replace(/욕\s*쳐먹/g, '거친 반응을 듣')
+    .replace(/뒤지게/g, '많이')
+    .replace(/닥치시죠/g, '그만하자는 말')
+    .replace(/양반들아/g, '분들')
+    .replace(/개소리/g, '무리한 주장')
+    .replace(/ㅅㅂ|시발|씨발/g, '아쉬움');
+}
+
+function splitReadableSentences(text) {
+  const byLine = String(text || '')
+    .replace(/([.!?。！？]|다|요|죠|네|음|함|임|됨|였다|했다|한다|된다|습니다|네요)\s+/g, '$1\n')
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (byLine.length > 1) return byLine;
+  return String(text || '')
+    .split(/(?<=[.!?。！？])\s+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function paragraphizeBody(text) {
+  const clean = softenReviewText(cleanupText(text));
+  const lines = splitReadableSentences(clean);
+  const paragraphs = [];
+  let current = '';
+
+  for (const line of lines) {
+    const next = current ? `${current} ${line}` : line;
+    if (next.length > 170 && current) {
+      paragraphs.push(current);
+      current = line;
+    } else {
+      current = next;
+    }
+  }
+  if (current) paragraphs.push(current);
+
+  return paragraphs
+    .map((paragraph) => paragraph.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .slice(0, 6)
+    .join('\n\n');
+}
+
 function extractBody($) {
   const selectors = [
     '.write_div',
@@ -296,8 +349,16 @@ async function extractPost(candidate, imageHashes) {
       $('.title').first().text() ||
       $('title').text(),
   );
-  const body = extractBody($);
-  if (!title || title.length < 5 || blockedText.test(title) || blockedText.test(body)) {
+  const body = paragraphizeBody(extractBody($));
+  if (
+    !title ||
+    title.length < 5 ||
+    blockedText.test(title) ||
+    blockedText.test(body) ||
+    reviewBlockedText.test(title) ||
+    reviewBlockedText.test(body) ||
+    junkBodyText.test(body)
+  ) {
     throw new Error(`blocked or empty title/body: ${title}`);
   }
 

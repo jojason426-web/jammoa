@@ -13,7 +13,8 @@
     "db:migrate:local": "wrangler d1 migrations apply jammoa-db --local",
     "db:migrate": "wrangler d1 migrations apply jammoa-db --remote",
     "import:source": "node scripts/import-allowed-source.mjs",
-    "crawl:latest": "node scripts/crawl-latest-posts.mjs"
+    "crawl:latest": "node scripts/crawl-latest-posts.mjs",
+    "review:safe": "node scripts/review-safe-readable-bodies.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.25.0",
