@@ -219,7 +219,7 @@ async function listPosts(env: Env, url: URL): Promise<Response> {
     : env.DB.prepare(query).bind('published', limit, offset)
   const result = await stmt.all()
 
-  return json({ posts: result.results ?? [] })
+  return json({ posts: (result.results ?? []).map(toPublicPost) })
 }
 
 async function getPost(env: Env, id: string): Promise<Response> {
@@ -235,7 +235,12 @@ async function getPost(env: Env, id: string): Promise<Response> {
     .bind(id, 'visible')
     .all()
 
-  return json({ post, comments: comments.results ?? [] })
+  return json({ post: toPublicPost(post), comments: comments.results ?? [] })
+}
+
+function toPublicPost(post: Record<string, unknown>): Record<string, unknown> {
+  const { source_url: _sourceUrl, source_image_url: _sourceImageUrl, ...publicPost } = post
+  return publicPost
 }
 
 async function seedDatabase(env: Env): Promise<Response> {

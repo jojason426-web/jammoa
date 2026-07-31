@@ -77,6 +77,12 @@ const blockedText =
   /19금|성인|야동|AV|비키니|노출|후방|섹시|음란|도박|카지노|불법|마약|혐오|자살|잔인|시체|강간|몰카|토렌트|다운로드|교미|뽕알|정액|발기|임신해|씨앗/i;
 const junkImage =
   /logo|sprite|icon|avatar|profile|blank|captcha|btn_|emoticon|banner|ads?|doubleclick|googlesyndication/i;
+const visibleSourceLabelPattern =
+  /\s*(?:[-–—|]\s*)?(?:DogDrip\.?Net\s*)?(?:개드립|DogDrip\.?Net|FM코리아|에펨코리아|에펨|디시인사이드|루리웹|Ruliweb|오늘의유머|웃긴대학|보배드림|뽐뿌)\s*$/giu;
+const visibleSourceLinePattern =
+  /(?:^|\n)\s*(?:출처|원문|Source)\s*[:：>\-\s]*(?:https?:\/\/\S+|DogDrip\.?Net|개드립|FM코리아|에펨코리아|디시인사이드|루리웹|Ruliweb|오늘의유머|웃긴대학|보배드림|뽐뿌)[^\n]*(?=\n|$)/giu;
+const scriptChunkPattern =
+  /\bvar\s+(?:default_url|current_url|request_uri|current_lang|current_mid|http_port|https_port|rewrite_level|enforce_ssl|cookies_ssl)\b[^\n]*/giu;
 
 function runWrangler(args) {
   const result = spawnSync(process.execPath, [wrangler, ...args], {
@@ -151,6 +157,7 @@ function normalizeTitle(value) {
   return String(value || '')
     .replace(/\.(jpg|jpeg|png|gif|webp)$/i, '')
     .replace(/\[[^\]]*]/g, '')
+    .replace(visibleSourceLabelPattern, '')
     .replace(/\s*[-–—|]\s*(DogDrip\.?Net\s*)?개드립\s*$/i, '')
     .replace(/\s*[-–—|]\s*(DogDrip\.?Net|FM코리아|에펨코리아|에펨|디시인사이드|루리웹|Ruliweb|오늘의유머|웃긴대학|보배드림|뽐뿌)\s*$/i, '')
     .replace(/\s*\((DogDrip\.?Net|FM코리아|에펨코리아|디시인사이드|루리웹|오늘의유머|웃긴대학|개드립)\)\s*$/i, '')
@@ -164,13 +171,15 @@ function cleanupText(value) {
     .replace(/\r/g, '\n')
     .replace(/\t/g, ' ')
     .replace(/\u00a0/g, ' ')
+    .replace(scriptChunkPattern, '\n')
+    .replace(visibleSourceLinePattern, '\n')
     .replace(/\s*추천\s*\d+\s*댓글\s*\d+/g, ' ')
     .replace(/dc official App/gi, ' ')
     .replace(/이미지 순서 ON|이미지 순서 OFF/g, ' ')
     .replace(/출처\s*[:：].*/g, ' ')
     .replace(/https?:\/\/\S+/gi, ' ')
     .split('\n')
-    .map((line) => line.replace(/\s+/g, ' ').trim())
+    .map((line) => line.replace(visibleSourceLabelPattern, '').replace(/\s+/g, ' ').trim())
     .filter((line) => !/^(var |if \(|jQuery|\$\(|}\);|current_|default_url|request_uri|http_port|https_port|rewrite_level|enforce_ssl|cookies_ssl|detectColorScheme)/.test(line))
     .filter((line) => !/^(개드립 인기글|붐업 베스트|핫 딜|핫딜 판|읽을 거리 판|인기글|커뮤니티|주식 \/ 재테크 판|인터넷 방송 판|익명 판|컴퓨터 \/ IT 판|영상 판|고민 상담 판|탈것 판|코인 판|스포츠 판|요리 판|덕후 판|창작 판|음악 판|정치 사회 판|젠더 이슈 판|게임 판|놀이터|아이디|비밀번호|ID\/PW 찾기|아직 회원이 아니신가요\?)$/.test(line))
     .filter(Boolean)
