@@ -151,6 +151,9 @@ function normalizeTitle(value) {
   return String(value || '')
     .replace(/\.(jpg|jpeg|png|gif|webp)$/i, '')
     .replace(/\[[^\]]*]/g, '')
+    .replace(/\s*[-–—|]\s*(DogDrip\.?Net\s*)?개드립\s*$/i, '')
+    .replace(/\s*[-–—|]\s*(DogDrip\.?Net|FM코리아|에펨코리아|에펨|디시인사이드|루리웹|Ruliweb|오늘의유머|웃긴대학|보배드림|뽐뿌)\s*$/i, '')
+    .replace(/\s*\((DogDrip\.?Net|FM코리아|에펨코리아|디시인사이드|루리웹|오늘의유머|웃긴대학|개드립)\)\s*$/i, '')
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 90);
@@ -292,8 +295,15 @@ async function extractPost(candidate, imageHashes) {
       if (ratio < 0.45 || ratio > 3.8) continue;
 
       const detailImage = await sharp(sourceImage)
-        .resize(960, 720, { fit: 'inside', withoutEnlargement: true })
-        .webp({ quality: 88, effort: 4 })
+        .rotate()
+        .resize(960, 720, {
+          fit: 'inside',
+          withoutEnlargement: false,
+          kernel: sharp.kernel.lanczos3,
+        })
+        .sharpen({ sigma: 0.7, m1: 1.1, m2: 2, x1: 2, y2: 10, y3: 20 })
+        .modulate({ brightness: 1.01, saturation: 1.03 })
+        .webp({ quality: 92, effort: 5, smartSubsample: true })
         .toBuffer();
       const hash = crypto.createHash('sha256').update(detailImage).digest('hex');
       if (imageHashes.has(hash)) continue;

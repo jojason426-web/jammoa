@@ -1,0 +1,26 @@
+name: Cleanup Jammoa Content
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Normalize Cloudflare credentials
+        shell: bash
+        run: |
+          echo "CLOUDFLARE_API_TOKEN=$(printf '%s' "${{ secrets.CLOUDFLARE_API_TOKEN }}" | tr -d '\r\n\t ')" >> "$GITHUB_ENV"
+          echo "CLOUDFLARE_ACCOUNT_ID=$(printf '%s' "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" | tr -d '\r\n\t ')" >> "$GITHUB_ENV"
+
+      - run: node scripts/cleanup-source-labels-and-images.mjs
