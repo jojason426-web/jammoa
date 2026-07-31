@@ -27,7 +27,7 @@ const visibleSourceLinePattern =
 const scriptChunkPattern =
   /\bvar\s+(?:default_url|current_url|request_uri|current_lang|current_mid|http_port|https_port|rewrite_level|enforce_ssl|cookies_ssl)\b[^\n]*/giu;
 const junkTextPattern =
-  /var\s+default_url|var\s+current_url|var\s+request_uri|current_mid\s*=\s*["']?dogdrip|ID\/PW|개드립 인기글|아직 회원이 아니신가요/iu;
+  /var\s+default_url|var\s+current_url|var\s+request_uri|current_mid\s*=\s*["']?dogdrip|scrollTop|comment_top|comment_end|return\s+false|ID\/PW|개드립 인기글|개드립콘|아직 회원이 아니신가요/iu;
 
 function runWrangler(args) {
   const result = spawnSync(process.execPath, [wrangler, ...args], {
@@ -55,6 +55,7 @@ function cleanText(value) {
         .replace(/\s+/g, ' ')
         .trim(),
     )
+    .filter((line) => !/^(?:scrollTop\s*:|return false|\},?\s*0\);|개드립콘|유저 개드립 인기글|인터넷)$/iu.test(line))
     .filter((line) => !scriptLinePattern.test(line))
     .filter((line) => !navigationLinePattern.test(line))
     .filter(Boolean)
