@@ -45,6 +45,7 @@ function sql(value) {
 function cleanText(value) {
   return String(value || '')
     .replace(scriptChunkPattern, '\n')
+    .replace(/scrollTop\s*:[^\n]*/giu, '\n')
     .replace(visibleSourceLinePattern, '\n')
     .replace(sourceLinePattern, '\n')
     .split('\n')
@@ -55,7 +56,7 @@ function cleanText(value) {
         .replace(/\s+/g, ' ')
         .trim(),
     )
-    .filter((line) => !/^(?:scrollTop\s*:|return false|\},?\s*0\);|개드립콘|유저 개드립 인기글|인터넷)$/iu.test(line))
+    .filter((line) => !/^(?:scrollTop\s*:|return false|\},?\s*0\);|개드립콘(?:\s*-.*)?|유저 개드립 인기글|인터넷)$/iu.test(line))
     .filter((line) => !scriptLinePattern.test(line))
     .filter((line) => !navigationLinePattern.test(line))
     .filter(Boolean)
@@ -138,13 +139,15 @@ for (const post of posts) {
   const summary = cleanText(post.summary);
   const body = cleanText(post.body);
   const fallbackSummary = (body || title).replace(/\s+/g, ' ').slice(0, 220).trim();
+  const summaryHasJunk = junkTextPattern.test(post.summary || '');
+  const bodyHasJunk = junkTextPattern.test(post.body || '');
   const fields = [];
 
   if (title !== post.title) fields.push(`title=${sql(title)}`);
-  if ((summary && summary !== post.summary) || junkTextPattern.test(post.summary || '')) {
-    fields.push(`summary=${sql((summary || fallbackSummary).slice(0, 220))}`);
+  if ((summary && summary !== post.summary) || summaryHasJunk) {
+    fields.push(`summary=${sql((summaryHasJunk ? fallbackSummary : summary || fallbackSummary).slice(0, 220))}`);
   }
-  if ((body && body !== post.body) || junkTextPattern.test(post.body || '')) {
+  if ((body && body !== post.body) || bodyHasJunk) {
     fields.push(`body=${sql(body || fallbackSummary)}`);
   }
 
