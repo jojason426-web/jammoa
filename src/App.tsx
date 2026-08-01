@@ -80,7 +80,7 @@ const infoPages = [
     title: '문의',
     paragraphs: [
       '운영 문의, 저작권 신고, 광고 및 제휴 문의는 이메일로 접수합니다.',
-      '이메일: contact@jammoa.com',
+      '이메일: jojason426@gmail.com',
       '신고 접수 시 게시글 주소, 문제 사유, 권리 증빙 자료를 함께 보내주시면 더 빠르게 확인할 수 있습니다.',
     ],
   },
@@ -91,7 +91,7 @@ const infoPages = [
       '잼모아는 서비스 제공, 보안, 통계 분석, 문의 대응을 위해 필요한 최소한의 정보를 처리합니다.',
       'Google AdSense 등 제3자 광고 서비스가 쿠키 또는 유사 기술을 사용해 광고를 표시할 수 있습니다.',
       '방문자는 브라우저 설정을 통해 쿠키 저장을 거부하거나 삭제할 수 있습니다.',
-      '개인정보 관련 문의는 contact@jammoa.com 으로 보내주세요.',
+      '개인정보 관련 문의는 jojason426@gmail.com 으로 보내주세요.',
     ],
   },
   {
@@ -622,7 +622,7 @@ function App() {
             <ul>
               <li>원문 권리자 요청은 확인 후 빠르게 조치합니다.</li>
               <li>게시글 주소와 요청 사유를 함께 보내주세요.</li>
-              <li>문의: contact@jammoa.com</li>
+              <li>문의: jojason426@gmail.com</li>
             </ul>
           </section>
 
@@ -747,7 +747,7 @@ function ForumFrame({
             비공개 또는 삭제 조치하겠습니다.
           </p>
         </div>
-        <p className="footer-contact">문의: contact@jammoa.com</p>
+        <p className="footer-contact">문의: jojason426@gmail.com</p>
       </footer>
     </div>
   )
