@@ -65,22 +65,45 @@ const adSlots = {
   side: import.meta.env.VITE_ADSENSE_SLOT_SIDE as string | undefined,
   inArticle: import.meta.env.VITE_ADSENSE_SLOT_IN_ARTICLE as string | undefined,
 }
+const businessInfo = {
+  siteName: '잼모아',
+  siteUrl: 'https://jammoa.com',
+  operator: '조근형',
+  email: 'jojason426@gmail.com',
+}
 const infoPages = [
   {
     path: '/about',
     title: '서비스 소개',
     paragraphs: [
       '잼모아는 국내 온라인에서 반응 좋은 유머, 짤방, 이슈성 글을 보기 쉽게 정리하는 게시판형 콘텐츠 사이트입니다.',
+      `사이트명: ${businessInfo.siteName}`,
+      `공식 URL: ${businessInfo.siteUrl}`,
+      `운영자: ${businessInfo.operator}`,
       '이 사이트는 독자가 빠르게 글을 찾고 읽을 수 있도록 게시판, 검색, 인기글, 상세 페이지를 제공합니다.',
       '성인물, 혐오, 불법 행위 조장, 저작권 침해 콘텐츠는 운영 정책에 따라 제한합니다.',
+    ],
+  },
+  {
+    path: '/business',
+    title: '운영자 정보',
+    paragraphs: [
+      `사이트명: ${businessInfo.siteName}`,
+      `비즈채널 URL: ${businessInfo.siteUrl}`,
+      `운영자: ${businessInfo.operator}`,
+      `문의 이메일: ${businessInfo.email}`,
+      '잼모아는 게시판형 유머 콘텐츠를 정리해 제공하는 온라인 콘텐츠 서비스입니다.',
+      '서비스 운영, 광고, 제휴, 권리 침해 신고와 관련된 문의는 위 이메일로 접수합니다.',
     ],
   },
   {
     path: '/contact',
     title: '문의',
     paragraphs: [
+      `사이트명: ${businessInfo.siteName}`,
+      `운영자: ${businessInfo.operator}`,
       '운영 문의, 저작권 신고, 광고 및 제휴 문의는 이메일로 접수합니다.',
-      '이메일: jojason426@gmail.com',
+      `이메일: ${businessInfo.email}`,
       '신고 접수 시 게시글 주소, 문제 사유, 권리 증빙 자료를 함께 보내주시면 더 빠르게 확인할 수 있습니다.',
     ],
   },
@@ -91,7 +114,7 @@ const infoPages = [
       '잼모아는 서비스 제공, 보안, 통계 분석, 문의 대응을 위해 필요한 최소한의 정보를 처리합니다.',
       'Google AdSense 등 제3자 광고 서비스가 쿠키 또는 유사 기술을 사용해 광고를 표시할 수 있습니다.',
       '방문자는 브라우저 설정을 통해 쿠키 저장을 거부하거나 삭제할 수 있습니다.',
-      '개인정보 관련 문의는 jojason426@gmail.com 으로 보내주세요.',
+      `개인정보 관련 문의는 ${businessInfo.email} 으로 보내주세요.`,
     ],
   },
   {
@@ -603,6 +626,18 @@ function App() {
             <h2>사이트 정보</h2>
             <dl>
               <div>
+                <dt>사이트명</dt>
+                <dd>{businessInfo.siteName}</dd>
+              </div>
+              <div>
+                <dt>운영자</dt>
+                <dd>{businessInfo.operator}</dd>
+              </div>
+              <div>
+                <dt>공식 URL</dt>
+                <dd>jammoa.com</dd>
+              </div>
+              <div>
                 <dt>운영 방식</dt>
                 <dd>검수형</dd>
               </div>
@@ -622,7 +657,7 @@ function App() {
             <ul>
               <li>원문 권리자 요청은 확인 후 빠르게 조치합니다.</li>
               <li>게시글 주소와 요청 사유를 함께 보내주세요.</li>
-              <li>문의: jojason426@gmail.com</li>
+              <li>문의: {businessInfo.email}</li>
             </ul>
           </section>
 
@@ -739,6 +774,9 @@ function ForumFrame({
         </nav>
         <div className="footer-notice">
           <p>
+            사이트명: {businessInfo.siteName} · 공식 URL: {businessInfo.siteUrl} · 운영자: {businessInfo.operator}
+          </p>
+          <p>
             잼모아는 웹상에 공개된 유머, 짤방, 이슈성 콘텐츠를 수집한 뒤 요약, 분류, 출처 정보를 중심으로 정리해 소개합니다.
             특정 개인이나 단체에 정신적, 재산적 손해를 끼칠 의도는 없으며, 문제가 되는 게시물은 운영 기준에 따라 제한합니다.
           </p>
@@ -747,7 +785,7 @@ function ForumFrame({
             비공개 또는 삭제 조치하겠습니다.
           </p>
         </div>
-        <p className="footer-contact">문의: jojason426@gmail.com</p>
+        <p className="footer-contact">문의: {businessInfo.email}</p>
       </footer>
     </div>
   )
