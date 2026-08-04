@@ -6,9 +6,10 @@ import sharp from 'sharp';
 
 const wrangler = path.resolve('node_modules/wrangler/bin/wrangler.js');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'jammoa-enhanced-images-'));
-const version = 'sharp-20260722a';
+const version = `sharp-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}-native`;
 const siteBase = 'https://jammoa.com';
 const postLimit = Math.max(Number(process.env.JAMMOA_IMAGE_LIMIT || 120), 1);
+const requestTimeoutMs = Number(process.env.JAMMOA_IMAGE_FETCH_TIMEOUT_MS || 10000);
 const ua =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36';
 
@@ -34,6 +35,8 @@ async function fetchImage(row) {
   let lastError;
   for (const url of candidates) {
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), requestTimeoutMs);
       const response = await fetch(url, {
         headers: {
           'user-agent': ua,
@@ -41,7 +44,8 @@ async function fetchImage(row) {
           accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
         },
         redirect: 'follow',
-      });
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeout));
       if (!response.ok) throw new Error(`${response.status} ${url}`);
       const buffer = Buffer.from(await response.arrayBuffer());
       const metadata = await sharp(buffer).metadata();
@@ -59,15 +63,15 @@ async function enhanceImage(buffer) {
   return await sharp(buffer, { animated: false })
     .rotate()
     .resize({
-      width: 960,
-      height: 720,
+      width: 1280,
+      height: 1280,
       fit: 'inside',
-      withoutEnlargement: false,
+      withoutEnlargement: true,
       kernel: sharp.kernel.lanczos3,
     })
-    .sharpen({ sigma: 0.75, m1: 1.15, m2: 2.1, x1: 2, y2: 10, y3: 20 })
-    .modulate({ brightness: 1.015, saturation: 1.04 })
-    .webp({ quality: 94, effort: 5, smartSubsample: true })
+    .sharpen({ sigma: 0.55, m1: 1.05, m2: 1.7, x1: 2, y2: 8, y3: 18 })
+    .modulate({ brightness: 1.01, saturation: 1.03 })
+    .webp({ quality: 96, effort: 5, smartSubsample: false })
     .toBuffer();
 }
 

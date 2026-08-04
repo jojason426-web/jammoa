@@ -372,14 +372,14 @@ async function extractPost(candidate, imageHashes) {
 
       const detailImage = await sharp(sourceImage)
         .rotate()
-        .resize(960, 720, {
+        .resize(1280, 1280, {
           fit: 'inside',
-          withoutEnlargement: false,
+          withoutEnlargement: true,
           kernel: sharp.kernel.lanczos3,
         })
-        .sharpen({ sigma: 0.7, m1: 1.1, m2: 2, x1: 2, y2: 10, y3: 20 })
+        .sharpen({ sigma: 0.55, m1: 1.05, m2: 1.7, x1: 2, y2: 8, y3: 18 })
         .modulate({ brightness: 1.01, saturation: 1.03 })
-        .webp({ quality: 92, effort: 5, smartSubsample: true })
+        .webp({ quality: 96, effort: 5, smartSubsample: false })
         .toBuffer();
       const hash = crypto.createHash('sha256').update(detailImage).digest('hex');
       if (imageHashes.has(hash)) continue;
