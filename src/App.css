@@ -1007,7 +1007,25 @@ button:disabled {
   margin: 18px 0;
 }
 
+.adsense-unit--bottom-right {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 40;
+  width: min(320px, calc(100vw - 32px));
+  min-height: 100px;
+  border: 1px solid var(--color-border-base);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+}
+
 @media (max-width: 760px) {
+  .adsense-unit--bottom-right {
+    right: 10px;
+    bottom: 10px;
+    width: min(300px, calc(100vw - 20px));
+    min-height: 90px;
+  }
+
   .utility-row {
     display: none;
   }

@@ -61,9 +61,8 @@ const galleryLinks: { label: string; mode: MainNavMode }[] = [
 const sideNotices = ['저작권 신고는 문의 페이지에서 접수합니다.', '성인/혐오/불법 콘텐츠는 노출하지 않습니다.', '수집 글은 검수 후 게시됩니다.']
 const todayKeywords = ['월요일', '회사생활', '반전사진', '웃긴짤', '단톡방', '레전드']
 const adSlots = {
-  top: import.meta.env.VITE_ADSENSE_SLOT_TOP as string | undefined,
-  side: import.meta.env.VITE_ADSENSE_SLOT_SIDE as string | undefined,
-  inArticle: import.meta.env.VITE_ADSENSE_SLOT_IN_ARTICLE as string | undefined,
+  bottomRight: (import.meta.env.VITE_ADSENSE_SLOT_BOTTOM_RIGHT ||
+    import.meta.env.VITE_ADSENSE_SLOT_SIDE) as string | undefined,
 }
 const businessInfo = {
   siteName: '잼모아',
@@ -342,7 +341,6 @@ function App() {
             {selectedPost.body.map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>
             ))}
-            <AdSenseUnit slot={adSlots.inArticle} className="adsense-unit--article" />
             <section className="comment-preview" aria-label="댓글 미리보기">
               <h2>댓글</h2>
               <ul>
@@ -362,7 +360,6 @@ function App() {
   return (
     <ForumFrame activeNav={activeNav} query={query} setQuery={setQuery} navigateTo={navigateTo} onMainNavClick={handleMainNavClick}>
         <section className="board">
-          <AdSenseUnit slot={adSlots.top} className="adsense-unit--top" />
           <div className="board-titlebar">
             <h1>유머/움짤/이슈</h1>
             <div className="board-tools" aria-label="게시글 정렬">
@@ -661,7 +658,6 @@ function App() {
             </ul>
           </section>
 
-          <AdSenseUnit slot={adSlots.side} className="adsense-unit--side" />
         </aside>
     </ForumFrame>
   )
@@ -761,6 +757,7 @@ function ForumFrame({
       <main className="forum-shell" id="main-content">
         {children}
       </main>
+      <AdSenseUnit slot={adSlots.bottomRight} className="adsense-unit--bottom-right" />
       <footer className="site-footer">
         <nav aria-label="사이트 정보">
           {infoPages.map((page) => (
