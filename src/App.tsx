@@ -13,7 +13,29 @@ const postsPerPage = 30
 
 type ApiPost = Omit<Post, 'body' | 'comments'> & {
   body?: string | string[]
-  comments?: string[]
+  comments?: string[] | ApiComment[]
+}
+
+type ApiComment = {
+  body?: string
+  content?: string
+  text?: string
+}
+
+function normalizeApiPost(post: ApiPost): Post {
+  const comments = (post.comments ?? [])
+    .map((comment) => (typeof comment === 'string' ? comment : comment.body || comment.content || comment.text || ''))
+    .filter(Boolean)
+
+  return {
+    ...post,
+    body: Array.isArray(post.body)
+      ? post.body
+      : post.body
+        ? post.body.split(/\n{2,}/).map((paragraph) => paragraph.trim()).filter(Boolean)
+        : [],
+    comments,
+  } as Post
 }
 
 const notices = [
@@ -153,6 +175,8 @@ function App() {
   const [currentPage, setCurrentPage] = useState(1)
   const [viewMode, setViewMode] = useState<ViewMode>('image')
   const [posts, setPosts] = useState<Post[]>([])
+  const [detailPost, setDetailPost] = useState<Post | null>(null)
+  const [detailLoading, setDetailLoading] = useState(false)
   const [postsLoading, setPostsLoading] = useState(true)
   const [currentPath, setCurrentPath] = useState(window.location.pathname)
 
@@ -160,15 +184,7 @@ function App() {
     fetch('/api/posts?limit=300')
       .then((response) => (response.ok ? response.json() : Promise.reject(new Error('API unavailable'))))
       .then((data: { posts?: ApiPost[] }) => {
-        setPosts((data.posts ?? []).map((post) => ({
-          ...post,
-          body: Array.isArray(post.body)
-            ? post.body
-            : post.body
-              ? post.body.split(/\n{2,}/).map((paragraph) => paragraph.trim()).filter(Boolean)
-              : [],
-          comments: post.comments ?? [],
-        })) as Post[])
+        setPosts((data.posts ?? []).map(normalizeApiPost))
       })
       .catch(() => setPosts([]))
       .finally(() => setPostsLoading(false))
@@ -216,7 +232,9 @@ function App() {
 
   const popularPosts = filteredPosts.slice(0, 5)
   const postMatch = currentPath.match(/^\/posts\/([^/]+)$/)
-  const selectedPost = postMatch ? posts.find((post) => post.id === postMatch[1]) : undefined
+  const selectedPost = postMatch
+    ? posts.find((post) => post.id === postMatch[1]) || (detailPost?.id === postMatch[1] ? detailPost : undefined)
+    : undefined
   const noticeMatch = currentPath.match(/^\/notices\/([^/]+)$/)
   const selectedNotice = noticeMatch ? notices.find((notice) => notice.id === noticeMatch[1]) : undefined
   const selectedInfoPage = infoPages.find((page) => page.path === currentPath)
@@ -248,6 +266,45 @@ function App() {
     setQuery('')
     navigateTo('/')
   }
+
+  useEffect(() => {
+    const match = currentPath.match(/^\/posts\/([^/]+)$/)
+    if (!match) {
+      setDetailPost(null)
+      setDetailLoading(false)
+      return
+    }
+
+    const id = decodeURIComponent(match[1])
+    if (posts.some((post) => post.id === id) || detailPost?.id === id) {
+      setDetailLoading(false)
+      return
+    }
+
+    let cancelled = false
+    setDetailLoading(true)
+    fetch(`/api/posts/${encodeURIComponent(id)}`)
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error('Post unavailable'))))
+      .then((data: { post?: ApiPost; comments?: string[] }) => {
+        if (cancelled || !data.post) return
+        const nextPost = normalizeApiPost({
+          ...data.post,
+          comments: data.comments ?? data.post.comments,
+        })
+        setDetailPost(nextPost)
+        setPosts((currentPosts) => (currentPosts.some((post) => post.id === nextPost.id) ? currentPosts : [nextPost, ...currentPosts]))
+      })
+      .catch(() => {
+        if (!cancelled) setDetailPost(null)
+      })
+      .finally(() => {
+        if (!cancelled) setDetailLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [currentPath, detailPost?.id, posts])
 
   const activeNav: MainNavMode =
     currentPath.startsWith('/notices/')
@@ -299,7 +356,7 @@ function App() {
     )
   }
 
-  if (postMatch && postsLoading) {
+  if (postMatch && (postsLoading || detailLoading)) {
     return (
       <ForumFrame activeNav={activeNav} query={query} setQuery={setQuery} navigateTo={navigateTo} onMainNavClick={handleMainNavClick}>
         <article className="post-detail"><p>게시글을 불러오는 중입니다.</p></article>

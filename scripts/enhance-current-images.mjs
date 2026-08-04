@@ -8,6 +8,7 @@ const wrangler = path.resolve('node_modules/wrangler/bin/wrangler.js');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'jammoa-enhanced-images-'));
 const version = 'sharp-20260722a';
 const siteBase = 'https://jammoa.com';
+const postLimit = Math.max(Number(process.env.JAMMOA_IMAGE_LIMIT || 120), 1);
 const ua =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36';
 
@@ -77,7 +78,7 @@ const postsJson = runWrangler([
   '--remote',
   '--json',
   '--command',
-  "SELECT id, image_key, image_url, source_image_url, source_url FROM posts WHERE status='published' AND image_key IS NOT NULL ORDER BY published_at DESC;",
+  `SELECT id, image_key, image_url, source_image_url, source_url FROM posts WHERE status='published' AND image_key IS NOT NULL ORDER BY published_at DESC LIMIT ${postLimit};`,
 ]);
 
 const posts = JSON.parse(postsJson)[0]?.results || [];

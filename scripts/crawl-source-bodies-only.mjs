@@ -8,6 +8,8 @@ const wrangler = path.resolve('node_modules/wrangler/bin/wrangler.js');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'jammoa-source-bodies-'));
 const ua =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36';
+const requestTimeoutMs = Number(process.env.JAMMOA_FETCH_TIMEOUT_MS || 6000);
+const postLimit = Math.max(Number(process.env.JAMMOA_BODY_LIMIT || 120), 1);
 
 function runWrangler(args) {
   const result = spawnSync(process.execPath, [wrangler, ...args], {
@@ -120,6 +122,8 @@ function extractGenericBody(html) {
 async function fetchBody(post) {
   const url = sourceUrl(post.source_url);
   if (!url) return '';
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), requestTimeoutMs);
   const response = await fetch(url, {
     headers: {
       'user-agent': ua,
@@ -127,7 +131,8 @@ async function fetchBody(post) {
       accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     },
     redirect: 'follow',
-  });
+    signal: controller.signal,
+  }).finally(() => clearTimeout(timeout));
   if (!response.ok) throw new Error(`${response.status} ${url}`);
   const html = await response.text();
   const text = /dcinside\.com/i.test(url) ? extractDcBody(html) : extractGenericBody(html);
@@ -159,7 +164,7 @@ const postsJson = runWrangler([
   '--remote',
   '--json',
   '--command',
-  "SELECT id,title,source_url FROM posts WHERE status='published' ORDER BY published_at DESC;",
+  `SELECT id,title,source_url FROM posts WHERE status='published' ORDER BY published_at DESC LIMIT ${postLimit};`,
 ]);
 
 const posts = JSON.parse(postsJson)[0]?.results || [];
