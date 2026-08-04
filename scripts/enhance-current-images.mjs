@@ -10,6 +10,7 @@ const version = `sharp-${new Date().toISOString().slice(0, 10).replaceAll('-', '
 const siteBase = 'https://jammoa.com';
 const postLimit = Math.max(Number(process.env.JAMMOA_IMAGE_LIMIT || 120), 1);
 const requestTimeoutMs = Number(process.env.JAMMOA_IMAGE_FETCH_TIMEOUT_MS || 10000);
+const onlyStale = process.env.JAMMOA_IMAGE_ONLY_STALE === '1';
 const ua =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36';
 
@@ -82,7 +83,7 @@ const postsJson = runWrangler([
   '--remote',
   '--json',
   '--command',
-  `SELECT id, image_key, image_url, source_image_url, source_url FROM posts WHERE status='published' AND image_key IS NOT NULL ORDER BY published_at DESC LIMIT ${postLimit};`,
+  `SELECT id, image_key, image_url, source_image_url, source_url FROM posts WHERE status='published' AND image_key IS NOT NULL${onlyStale ? ` AND image_url NOT LIKE '%${version}%'` : ''} ORDER BY published_at DESC LIMIT ${postLimit};`,
 ]);
 
 const posts = JSON.parse(postsJson)[0]?.results || [];
@@ -113,6 +114,7 @@ for (const post of posts) {
       'image/webp',
       '--remote',
     ]);
+    fs.rmSync(output, { force: true });
 
     updates.push(
       `UPDATE posts SET image_url=${sqlValue(`/images/${key}?v=${version}`)}, image_format='webp' WHERE id=${sqlValue(post.id)};`,
